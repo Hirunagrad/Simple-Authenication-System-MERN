@@ -42,19 +42,69 @@ router.post("/" ,async(req,res) => {
 
     const savedUser = await newUser.save();
 
-    //log user in
+    //sign the token***
     const token = jwt.sign({
         user: savedUser._id
-    },process.env.JWT_SECRET)
+    },process.env.JWT_SECRET);
 
-    console.log(token);
+   // console.log(token);
    //console.log(passwordHash);
+    
+   //send the token in a HTTP-only cookie
+   res.cookie("token", token, {
+      httpOnly: true
+   }).send();
     
    }
    catch(err){
        console.error(err);
        res.status(500).send();
    }
+
 });
+
+router.post("/login", async(req,res) => {
+ 
+   try{
+    
+      const {email,password} = req.body;
+
+      //validate
+      if(!email || !password){
+        return res.status(400).json({errorMessage: "please enter all required fields"});
+       }
+
+       const existingUser = await User.findOne({ email });
+       if(!existingUser){
+        return res.status(401).json({errorMessage: "wrong email and password"});
+       } 
+
+       const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
+       if(!passwordCorrect){
+        return res.status(401).json({errorMessage: "wrong email and password"});
+       }
+       
+       const token = jwt.sign({
+        user: existingUser._id
+    },process.env.JWT_SECRET);
+
+   // console.log(token);
+   //console.log(passwordHash);
+    
+   //send the token in a HTTP-only cookie
+   res.cookie("token", token, {
+      httpOnly: true
+   }).send();
+
+
+
+
+   }catch(err){
+        console.error(err);
+        res.status(500).send();
+   }
+
+});
+
 
 module.exports = router;
