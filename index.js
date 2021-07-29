@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const cors = require('cors');
 
 dotenv.config();
 
@@ -15,7 +16,12 @@ app.get("/test", (req,res)=>{
     res.send("test is sucsessfull");
 });
 
+//its active the jsons
 app.use(express.json());
+app.use(cors({
+    origin: ["http://localhost:3001"],//it acsess to backend port 3001
+    credentials:true,//it acsess tokens
+}));
 
 
 
@@ -38,3 +44,4 @@ try{
 //set the routes
 
 app.use("/auth", require("./routers/userRoutes"));
+app.use("/customer", require("./routers/customerRoutes"));
